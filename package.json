@@ -1,8 +1,13 @@
 {
   "name": "@kazaar/express-error-handler",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Express error handling and logging utilities",
   "main": "index.js",
+  "files": [
+    "index.js",
+    "config.js",
+    "error-utils.js"
+  ],
   "scripts": {
     "lint": "eslint . --ignore-path .gitignore && prettier --check \"**/*.{json,md,html,yaml}\" --ignore-path .gitignore",
     "lint:fix": "eslint . --ignore-path .gitignore --fix && prettier --write \"**/*.{json,md,html,yaml}\" --ignore-path .gitignore"
@@ -23,7 +28,6 @@
     ]
   },
   "dependencies": {
-    "chalk": "^2.4.2",
     "http-errors": "^1.7.2"
   },
   "devDependencies": {

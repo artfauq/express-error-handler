@@ -1,73 +1,13 @@
-const chalk = require('chalk').default;
-const createHttpError = require('http-errors');
-
-const isDevelopment = process.env.NODE_ENV === 'development';
+const { isDevelopment } = require('./config');
+const { logError, parseError } = require('./error-utils');
 
 /**
- * Module that exposes various error handling functions.
- *
  * @param {any} [logger=console]
  */
 module.exports = (logger = console) => {
   if (!Object.prototype.hasOwnProperty.call(logger, 'error')) {
     throw new Error("'logger' object must have an 'error' property");
   }
-
-  /**
-   * Method used to log an error messawge.
-   *
-   * Accepts an optional message parameter that will override any existing error message.
-   *
-   * @param {any} err
-   * @param {string} [message='']
-   */
-  const logError = (err, message = '') => {
-    let error = message || err.message || err;
-
-    // Append error stack if app is in development mode
-    if (isDevelopment) {
-      error += `\n\n${err.stack}\n`;
-    }
-
-    logger.error(error);
-  };
-
-  /**
-   *
-   * HTTP error parser.
-   *
-   * @param {any} err
-   * @returns {import('http-errors').HttpError}
-   */
-  const parseError = err => {
-    return createHttpError(err.status || err.response.status || 500, err);
-  };
-
-  /**
-   * Event listener for server 'error' event.
-   *
-   * @param {any} err
-   */
-  const handleServerError = err => {
-    let message = '';
-
-    const { port, address } = err;
-
-    switch (err.code) {
-      case 'EADDRINUSE':
-        message = `${chalk.red('X')} Error: port ${port} of ${address} already in use\n`;
-        break;
-
-      case 'EACCES':
-        message = `${chalk.red('X')} Error: port ${port} requires elevated privileges`;
-        break;
-
-      default:
-        message = err.message || `${err}`;
-    }
-
-    logError(err, message);
-  };
 
   /**
    * HTTP error handling Express middleware.
@@ -78,13 +18,13 @@ module.exports = (logger = console) => {
    * @param {import('express').NextFunction} next
    * @returns {void}
    */
-  const httpErrorHandler = (err, req, res, next) => {
+  return (err, req, res, next) => {
     // Parse error
     const error = parseError(err);
 
     // Log error with a custom error message
     const msg = `${error.status} - ${error.name}: ${error.message} [${req.method} ${req.originalUrl} - ${req.ip}]`;
-    logError(error, msg);
+    logError(logger, error, msg);
 
     // Log error
     // Set response status
@@ -117,6 +57,4 @@ module.exports = (logger = console) => {
     // End response
     res.end();
   };
-
-  return { handleServerError, httpErrorHandler, logError };
 };
