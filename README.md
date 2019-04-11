@@ -12,7 +12,9 @@ Express middleware used to:
 
 ## Installation
 
-`npm install @kazaar/express-error-handler`
+```powershell
+npm install @kazaar/express-error-handler
+```
 
 ## Usage
 
