@@ -1,5 +1,7 @@
 # Express error handler
 
+![](https://img.shields.io/badge/license-MIT-blue.svg)
+
 > HTTP errors handling middleware for [Express](https://github.com/expressjs/express/)
 
 ## Description
