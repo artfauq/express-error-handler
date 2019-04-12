@@ -63,3 +63,7 @@ If `NODE_ENV` is set to `development`:
 
 - Error stack will be appended to the logs
 - Error details will be sent back to the client
+
+## License
+
+MIT © [Arthur Fauquenot](https://github.com/arthurfauq)
