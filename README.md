@@ -6,19 +6,52 @@
 
 ## Description
 
-Express middleware used to:
+This module exposes various middlewares and methods to handle errors inside an Express application:
 
-- Parse an error to get a normalized HTTP error
-- Log the error with a customized error message
-- Send the response back to the client
+- **HTTP** error handling _middleware_
+- **celebrate/joi** error handling _middleware_
+- **JWT** error handling _middleware_
+- **Server** error _handler_
+- **Sequelize** connection error _handler_
 
 ## Installation
 
-```powershell
+```bash
 npm install @kazaar/express-error-handler
 ```
 
+## Example
+
+Example using all the exposed methods / middlewares:
+
+```javascript
+// index.js
+
+const express = require('express');
+const expressErrorHandler = require('express-error-handler');
+const logger = require('./src/config/winston');
+
+const errorHandler = expressErrorHandler(logger);
+const app = express();
+
+// Configure application middlewares
+app.use(errorHandler.joiErrorParser);
+app.use(errorHandler.jwtErrorParser);
+app.use(errorHandler.httpErrorHandler);
+
+// Try database authentication and start server
+sequelize
+  .authenticate(() => {
+    app
+      .listen(8080, () => logger.info('Application running on port 8080'));
+      .on('error', errorHandler.handleServerError)
+  })
+  .catch(errorHandler.handleDatabaseConnectionError);
+```
+
 ## Usage
+
+### Initialization
 
 - **With a logging library**
 
@@ -28,14 +61,11 @@ If you use a logging library such as **Winston**, import the logger and initiali
 // index.js
 
 const express = require('express');
-const errorHandler = require('@kazaar/express-error-handler');
-const logger = require('winston');
-// OR
-const logger = require('./config/winston');
+const expressErrorHandler = require('express-error-handler');
+const logger = require('winston'); // or import custom Winston config
 
 const app = express();
-
-app.use(errorHandler(logger));
+const errorHandler = expressErrorHandler(logger);
 ```
 
 The logger object must have an `error` method (e.g `logger.error()`).
@@ -50,11 +80,98 @@ If you don't use a logging library, the handler will use the `console` as logger
 // index.js
 
 const express = require('express');
-const errorHandler = require('@kazaar/express-error-handler');
+const expressErrorHandler = require('express-error-handler');
 
 const app = express();
+const errorHandler = expressErrorHandler();
+```
 
-app.use(errorHandler());
+### API
+
+When initializing the error handler, the returned object exposes some Express middlewares as well as some error handlers.
+
+#### Express middlewares
+
+- **joiErrorParser(err, req, res, next)**
+
+> celebrate/joi errors parsing Express middleware
+
+```javascript
+const { joiErrorParser } = expressErrorHandler(logger);
+
+app.use(joiErrorParser);
+```
+
+Middleware that checks if `err` was originated by [celebrate](https://www.npmjs.com/package/celebrate) (validation error) and if so:
+
+- Set error `status` to `400 Bad Request`
+- Set error `message` to default Joi message or custom message if `Joi.error()` was used
+
+**Note:** this middleware will call the next middleware in the stack with `next(err)`.
+
+- **jwtErrorParser(err, req, res, next)**
+
+> JWT errors parsing Express middleware
+
+```javascript
+const { jwtErrorParser } = expressErrorHandler(logger);
+
+app.use(jwtErrorParser);
+```
+
+Middleware that checks if `err` was originated by [express-jwt](https://github.com/auth0/express-jwt) (see [Error handling](https://github.com/auth0/express-jwt#error-handling)) and if so:
+
+- Set error `status` to `401 Unauthorized`
+- Set error `message` to `"Invalid token"`
+
+**Note:** this middleware will call the next middleware in the stack with `next(err)`.
+
+- **httpErrorHandler(err, req, res, next)**
+
+> HTTP error handling Express middleware
+
+```javascript
+const { httpErrorHandler } = expressErrorHandler(logger);
+
+app.use(httpErrorHandler);
+```
+
+Middleware used to:
+
+- Parse an error to get a normalized HTTP error
+- Log the error with a customized error message
+- Send the response back to the client
+
+**Important:** this middleware should be configured at the end of the middlewares stack as it end the response.
+
+#### Error handlers
+
+- **handleServerError(err)**
+
+> Error handler for server 'error' event
+
+Handler that will switch between error `code` property to output a custom error message.
+
+```javascript
+const { handleServerError } = expressErrorHandler(logger);
+
+const port = 8080;
+
+app
+  .listen(port, () => logger.info(`Application running on port ${port}`));
+  .on('error', handleServerError)
+```
+
+- **handleSequelizeConnectionError(err)**
+
+> Error handler for sequelize connection error
+
+Handler that will switch between error `code` property to output a custom error message.
+
+```javascript
+const { handleDatabaseConnectionError } = expressErrorHandler(logger);
+
+sequelize.authenticate().catch(handleDatabaseConnectionError);
 ```
 
 ### Environment
