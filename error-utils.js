@@ -16,7 +16,7 @@ function errorLogger(logger) {
 }
 
 function parseError(err) {
-  return createHttpError(err.status || err.response.status || 500, err);
+  return createHttpError(err.status || (err.response && err.response.status) || 500, err);
 }
 
 module.exports = { errorLogger, parseError };
