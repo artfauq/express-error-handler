@@ -1,3 +1,9 @@
+/**
+ * @typedef {import('express').Request} Request
+ * @typedef {import('express').Response} Response
+ * @typedef {import('express').NextFunction} NextFunction
+ */
+
 const chalk = require('chalk').default;
 const { isCelebrate } = require('celebrate');
 
@@ -5,13 +11,22 @@ const { red } = chalk.bold;
 const isDevelopment = process.env.NODE_ENV === 'development';
 
 /**
- * @param {any} [logger=console]
+ * Express error handling and logging utilities.
+ *
+ * @param {*} [logger=console]
+ * @returns {any}
  */
-module.exports = (logger = console) => {
+function errorHandler(logger = console) {
   if (!('error' in logger)) {
     throw new Error("'logger' object must have an 'error' property");
   }
 
+  /**
+   * Logs an error.
+   *
+   * @param {any} err
+   * @param {string} [message='']
+   */
   function logError(err, message = '') {
     let error = message || err.message || err;
 
@@ -29,7 +44,7 @@ module.exports = (logger = console) => {
      *
      * @param {any} err
      */
-    handleServerError: err => {
+    handleServerError(err) {
       let message = '';
 
       const { port, address } = err;
@@ -55,7 +70,7 @@ module.exports = (logger = console) => {
      *
      * @param {any} err
      */
-    handleSequelizeConnectionError: err => {
+    handleSequelizeConnectionError(err) {
       let message = '';
 
       const { name } = err;
@@ -74,14 +89,32 @@ module.exports = (logger = console) => {
     },
 
     /**
+     * Axios errors parsing Express middleware.
+     *
+     * @param {any} err
+     * @param {Request} req
+     * @param {Response} res
+     * @param {NextFunction} next
+     */
+    axiosErrorParser(err, req, res, next) {
+      const error = err.response
+        ? Object.assign(err, {
+            status: err.response.status,
+          })
+        : err;
+
+      next(error);
+    },
+
+    /**
      * celebrate/joi errors parsing Express middleware.
      *
-     * @param {import('http-errors').HttpError} err
-     * @param {import('express').Request} req
-     * @param {import('express').Response} res
-     * @param {import('express').NextFunction} next
+     * @param {any} err
+     * @param {Request} req
+     * @param {Response} res
+     * @param {NextFunction} next
      */
-    celebrateErrorParser: (err, req, res, next) => {
+    celebrateErrorParser(err, req, res, next) {
       const error = isCelebrate(err)
         ? Object.assign(err, {
             status: 400,
@@ -95,10 +128,10 @@ module.exports = (logger = console) => {
     /**
      * JWT errors parsing Express middleware.
      *
-     * @param {import('http-errors').HttpError} err
-     * @param {import('express').Request} req
-     * @param {import('express').Response} res
-     * @param {import('express').NextFunction} next
+     * @param {any} err
+     * @param {Request} req
+     * @param {Response} res
+     * @param {NextFunction} next
      */
     jwtErrorParser: (err, req, res, next) => {
       const error =
@@ -116,14 +149,13 @@ module.exports = (logger = console) => {
      * HTTP error handling Express middleware.
      *
      * @param {any} err
-     * @param {import('express').Request} req
-     * @param {import('express').Response} res
-     * @param {import('express').NextFunction} next
-     * @returns {void}
+     * @param {Request} req
+     * @param {Response} res
+     * @param {NextFunction} next
      */
-    httpErrorHandler: (err, req, res, next) => {
+    httpErrorHandler(err, req, res, next) {
       // Retrieve error status
-      const status = parseInt(err.status, 10) || parseInt(err.response && err.response.status, 10) || 500;
+      const status = parseInt(err.status, 10) || 500;
 
       // Set error details
       const error = {
@@ -137,8 +169,8 @@ module.exports = (logger = console) => {
       const msg = `${error.status} - ${error.name}: ${error.message} [${req.method} ${req.originalUrl} - ${req.ip}]`;
       logError(error, msg);
 
-      // Determine if error details should be hidden from client (the `expose` field will be false if error.status >= 500)
-      if (!isDevelopment || !error.expose) {
+      // Determine if error details should be hidden from client
+      if (!isDevelopment || error.status >= 500) {
         error.name = 'Server Error';
         error.message = 'Internal server error';
       }
@@ -162,4 +194,6 @@ module.exports = (logger = console) => {
       res.status(error.status).end();
     },
   };
-};
+}
+
+module.exports = errorHandler;

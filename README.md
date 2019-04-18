@@ -9,6 +9,7 @@
 This module exposes various middlewares and methods to handle errors inside an Express application:
 
 - **HTTP** error handling _middleware_
+- **axios** error handling _middleware_
 - **celebrate/joi** error handling _middleware_
 - **JWT** error handling _middleware_
 - **Server** error _handler_
@@ -35,6 +36,7 @@ const errorHandler = expressErrorHandler(logger);
 const app = express();
 
 // Configure application middlewares
+app.use(errorHandler.axiosErrorParser);
 app.use(errorHandler.celebrateErrorParser);
 app.use(errorHandler.jwtErrorParser);
 app.use(errorHandler.httpErrorHandler);
@@ -91,6 +93,22 @@ const errorHandler = expressErrorHandler();
 When initializing the error handler, the returned object exposes some Express middlewares as well as some error handlers.
 
 #### Express middlewares
+
+- **axiosErrorParser(err, req, res, next)**
+
+> axios errors parsing Express middleware
+
+```javascript
+const { axiosErrorParser } = expressErrorHandler(logger);
+
+app.use(axiosErrorParser);
+```
+
+Middleware that checks if `err.response` exists (see [Handling Errors](https://github.com/axios/axios#handling-errors)) and if so:
+
+- Set error `status` to `err.response.status`
+
+**Note:** this middleware will call the next middleware in the stack with `next(err)`.
 
 - **celebrateErrorParser(err, req, res, next)**
 

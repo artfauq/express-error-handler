@@ -23,8 +23,8 @@
     "http-errors"
   ],
   "scripts": {
-    "lint": "eslint . --ignore-path .gitignore && prettier --check \"**/*.{json,md,html,yaml}\" --ignore-path .gitignore",
-    "lint:fix": "eslint . --ignore-path .gitignore --fix && prettier --write \"**/*.{json,md,html,yaml}\" --ignore-path .gitignore"
+    "lint": "eslint index.js && prettier --check \"**/*.{json,md,html,yaml}\" --ignore-path .gitignore",
+    "lint:fix": "eslint index.js --fix && prettier --write \"**/*.{json,md,html,yaml}\" --ignore-path .gitignore"
   },
   "husky": {
     "hooks": {
@@ -43,8 +43,7 @@
   },
   "dependencies": {
     "celebrate": "^9.1.0",
-    "chalk": "^2.4.2",
-    "http-errors": "^1.7.2"
+    "chalk": "^2.4.2"
   },
   "devDependencies": {
     "eslint": "^5.13.0",
