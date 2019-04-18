@@ -1,5 +1,4 @@
 const chalk = require('chalk').default;
-const createHttpError = require('http-errors');
 const { isCelebrate } = require('celebrate');
 
 const { red } = chalk.bold;
@@ -75,17 +74,17 @@ module.exports = (logger = console) => {
     },
 
     /**
-     * Joi errors parsing Express middleware.
+     * celebrate/joi errors parsing Express middleware.
      *
      * @param {import('http-errors').HttpError} err
      * @param {import('express').Request} req
      * @param {import('express').Response} res
      * @param {import('express').NextFunction} next
      */
-    joiErrorParser: (err, req, res, next) => {
+    celebrateErrorParser: (err, req, res, next) => {
       const error = isCelebrate(err)
         ? Object.assign(err, {
-            status: createHttpError.BadRequest,
+            status: 400,
             message: err.details ? err.details[0].message : err.message,
           })
         : err;
@@ -105,7 +104,7 @@ module.exports = (logger = console) => {
       const error =
         err.name === 'UnauthorizedError'
           ? Object.assign(err, {
-              status: createHttpError.Unauthorized,
+              status: 401,
               message: 'Invalid token',
             })
           : err;
@@ -124,12 +123,15 @@ module.exports = (logger = console) => {
      */
     httpErrorHandler: (err, req, res, next) => {
       // Retrieve error status
-      const status = err.status || (err.response && err.response.status) || 500;
+      const status = parseInt(err.status, 10) || parseInt(err.response && err.response.status, 10) || 500;
 
-      // Parse error
-      let error = Object.assign(new createHttpError[status](err.message), {
+      // Set error details
+      const error = {
+        status,
+        name: err.name,
+        message: err.message,
         stack: err.stack,
-      });
+      };
 
       // Log error with a custom error message
       const msg = `${error.status} - ${error.name}: ${error.message} [${req.method} ${req.originalUrl} - ${req.ip}]`;
@@ -137,10 +139,8 @@ module.exports = (logger = console) => {
 
       // Determine if error details should be hidden from client (the `expose` field will be false if error.status >= 500)
       if (!isDevelopment || !error.expose) {
-        error = Object.assign(error, {
-          name: 'Server Error',
-          message: 'Internal server error',
-        });
+        error.name = 'Server Error';
+        error.message = 'Internal server error';
       }
 
       // Set response content according to acceptable format
@@ -158,11 +158,8 @@ module.exports = (logger = console) => {
         },
       });
 
-      // Set response status
-      res.status(error.status);
-
-      // End response
-      res.end();
+      // Set response status and send response
+      res.status(error.status).end();
     },
   };
 };

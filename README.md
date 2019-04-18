@@ -35,7 +35,7 @@ const errorHandler = expressErrorHandler(logger);
 const app = express();
 
 // Configure application middlewares
-app.use(errorHandler.joiErrorParser);
+app.use(errorHandler.celebrateErrorParser);
 app.use(errorHandler.jwtErrorParser);
 app.use(errorHandler.httpErrorHandler);
 
@@ -92,14 +92,14 @@ When initializing the error handler, the returned object exposes some Express mi
 
 #### Express middlewares
 
-- **joiErrorParser(err, req, res, next)**
+- **celebrateErrorParser(err, req, res, next)**
 
 > celebrate/joi errors parsing Express middleware
 
 ```javascript
-const { joiErrorParser } = expressErrorHandler(logger);
+const { celebrateErrorParser } = expressErrorHandler(logger);
 
-app.use(joiErrorParser);
+app.use(celebrateErrorParser);
 ```
 
 Middleware that checks if `err` was originated by [celebrate](https://www.npmjs.com/package/celebrate) (validation error) and if so:
