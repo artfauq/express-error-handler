@@ -2,10 +2,8 @@ const chalk = require('chalk').default;
 const createHttpError = require('http-errors');
 const { isCelebrate } = require('celebrate');
 
-const { isDevelopment } = require('./config');
-const { errorLogger, parseError } = require('./error-utils');
-
 const { red } = chalk.bold;
+const isDevelopment = process.env.NODE_ENV === 'development';
 
 /**
  * @param {any} [logger=console]
@@ -15,7 +13,16 @@ module.exports = (logger = console) => {
     throw new Error("'logger' object must have an 'error' property");
   }
 
-  const logError = errorLogger(logger);
+  function logError(err, message = '') {
+    let error = message || err.message || err;
+
+    // Append error stack if app is in development mode
+    if (isDevelopment) {
+      error += `\n\n${err.stack}\n`;
+    }
+
+    logger.error(error);
+  }
 
   return {
     /**
@@ -78,9 +85,9 @@ module.exports = (logger = console) => {
     joiErrorParser: (err, req, res, next) => {
       const error = isCelebrate(err)
         ? Object.assign(err, {
-          status: createHttpError.BadRequest,
-          message: err.details ? err.details[0].message : err.message,
-        })
+            status: createHttpError.BadRequest,
+            message: err.details ? err.details[0].message : err.message,
+          })
         : err;
 
       next(error);
@@ -98,9 +105,9 @@ module.exports = (logger = console) => {
       const error =
         err.name === 'UnauthorizedError'
           ? Object.assign(err, {
-            status: createHttpError.Unauthorized,
-            message: 'Invalid token',
-          })
+              status: createHttpError.Unauthorized,
+              message: 'Invalid token',
+            })
           : err;
 
       next(error);
@@ -116,39 +123,43 @@ module.exports = (logger = console) => {
      * @returns {void}
      */
     httpErrorHandler: (err, req, res, next) => {
+      // Retrieve error status
+      const status = err.status || (err.response && err.response.status) || 500;
+
       // Parse error
-      const error = parseError(err);
+      let error = Object.assign(new createHttpError[status](err.message), {
+        stack: err.stack,
+      });
 
       // Log error with a custom error message
       const msg = `${error.status} - ${error.name}: ${error.message} [${req.method} ${req.originalUrl} - ${req.ip}]`;
       logError(error, msg);
 
-      // Set response status
-      res.status(err.status);
-
-      // Determine if error details should be hidden from client (the `expose` field will be false if err.status >= 500)
-      const errorDetails =
-        isDevelopment || err.expose
-          ? err
-          : {
-            name: 'Server Error',
-            message: 'Internal server error',
-          };
+      // Determine if error details should be hidden from client (the `expose` field will be false if error.status >= 500)
+      if (!isDevelopment || !error.expose) {
+        error = Object.assign(error, {
+          name: 'Server Error',
+          message: 'Internal server error',
+        });
+      }
 
       // Set response content according to acceptable format
       res.format({
         text: () => {
-          res.send(`Error ${err.status} - ${errorDetails.name}: ${errorDetails.message}`);
+          res.send(`Error ${error.status} - ${error.name}: ${error.message}`);
         },
 
         json: () => {
           res.json({
-            status: err.status,
-            name: errorDetails.name,
-            message: errorDetails.message,
+            status: error.status,
+            name: error.name,
+            message: error.message,
           });
         },
       });
+
+      // Set response status
+      res.status(error.status);
 
       // End response
       res.end();

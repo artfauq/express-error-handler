@@ -11,9 +11,7 @@
     "url": "https://github.com/arthurfauq"
   },
   "files": [
-    "index.js",
-    "config.js",
-    "error-utils.js"
+    "index.js"
   ],
   "keywords": [
     "nodejs",
