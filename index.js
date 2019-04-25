@@ -73,16 +73,18 @@ function errorHandler(logger = console) {
     handleSequelizeConnectionError(err) {
       let message = '';
 
-      const { name } = err;
-      const { code, address, port } = err.original;
+      if (err.original) {
+        const { name } = err;
+        const { code, address, port } = err.original;
 
-      switch (code) {
-        case 'ECONNREFUSED':
-          message = `${red('X')} ${name}: Failed to connect to database at ${address}:${port}`;
-          break;
+        switch (code) {
+          case 'ECONNREFUSED':
+            message = `${red('X')} ${name}: Failed to connect to database at ${address}:${port}`;
+            break;
 
-        default:
-          message = err.message || `${err}`;
+          default:
+            message = err.message || `${err}`;
+        }
       }
 
       logError(err, message);
