@@ -122,8 +122,8 @@ app.use(celebrateErrorParser);
 
 Middleware that checks if `err` was originated by [celebrate](https://www.npmjs.com/package/celebrate) (validation error) and if so:
 
-- Set error `status` to `400 Bad Request`
-- Set error `message` to default Joi message or custom message if `Joi.error()` was used
+- Set error `status` to `400`
+- Set error `message` to default Joi message or custom message if `Joi.label()` was used
 
 **Note:** this middleware will call the next middleware in the stack with `next(err)`.
 
@@ -139,7 +139,7 @@ app.use(jwtErrorParser);
 
 Middleware that checks if `err` was originated by [express-jwt](https://github.com/auth0/express-jwt) (see [Error handling](https://github.com/auth0/express-jwt#error-handling)) and if so:
 
-- Set error `status` to `401 Unauthorized`
+- Set error `status` to `401`
 - Set error `message` to `"Invalid token"`
 
 **Note:** this middleware will call the next middleware in the stack with `next(err)`.

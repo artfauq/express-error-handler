@@ -13,8 +13,8 @@ const isDevelopment = process.env.NODE_ENV === 'development';
 /**
  * Express error handling and logging utilities.
  *
- * @param {*} [logger=console]
- * @returns {any}
+ * @param {{error(): void}} [logger=console]
+ * @returns {{ handleServerError(err: any): void, handleSequelizeConnectionError(err: any): void, axiosErrorParser(err: any, req: Request, res: Response, next: NextFunction): void, celebrateErrorParser(err: any, req: Request, res: Response, next: NextFunction): void, jwtErrorParser(err: any, req: Request, res: Response, next: NextFunction): void, httpErrorHandler(err: any, req: Request, res: Response, next: NextFunction): void;}}
  */
 function errorHandler(logger = console) {
   if (!('error' in logger)) {
@@ -43,6 +43,7 @@ function errorHandler(logger = console) {
      * Error handler for server 'error' event.
      *
      * @param {any} err
+     * @returns {void}
      */
     handleServerError(err) {
       let message = '';
@@ -69,6 +70,7 @@ function errorHandler(logger = console) {
      * Error handler for sequelize connection error.
      *
      * @param {any} err
+     * @returns {void}
      */
     handleSequelizeConnectionError(err) {
       let message = '';
@@ -97,15 +99,17 @@ function errorHandler(logger = console) {
      * @param {Request} req
      * @param {Response} res
      * @param {NextFunction} next
+     * @returns {void}
      */
     axiosErrorParser(err, req, res, next) {
-      const error = err.response
-        ? Object.assign(err, {
-            status: err.response.status,
-          })
-        : err;
+      if (err.response) {
+        const { status } = err.response;
+        const error = Object.assign(err, { status });
 
-      next(error);
+        return next(error);
+      }
+
+      return next(err);
     },
 
     /**
@@ -115,16 +119,24 @@ function errorHandler(logger = console) {
      * @param {Request} req
      * @param {Response} res
      * @param {NextFunction} next
+     * @returns {void}
      */
     celebrateErrorParser(err, req, res, next) {
-      const error = isCelebrate(err)
-        ? Object.assign(err, {
-            status: 400,
-            message: err.details ? err.details[0].message : err.message,
-          })
-        : err;
+      if (isCelebrate(err) || err.isJoi) {
+        const error = Object.assign(err, { status: 400 });
 
-      next(error);
+        if (error.details) {
+          const [details] = err.details;
+          const { message } = details;
+          const { key, label } = details.context;
+
+          error.message = label !== key ? label : message;
+        }
+
+        return next(error);
+      }
+
+      return next(err);
     },
 
     /**
@@ -134,17 +146,19 @@ function errorHandler(logger = console) {
      * @param {Request} req
      * @param {Response} res
      * @param {NextFunction} next
+     * @returns {void}
      */
-    jwtErrorParser: (err, req, res, next) => {
-      const error =
-        err.name === 'UnauthorizedError'
-          ? Object.assign(err, {
-              status: 401,
-              message: 'Invalid token',
-            })
-          : err;
+    jwtErrorParser(err, req, res, next) {
+      if (err.name === 'UnauthorizedError') {
+        const error = Object.assign(err, {
+          status: 401,
+          message: 'Invalid token',
+        });
 
-      next(error);
+        return next(error);
+      }
+
+      return next(err);
     },
 
     /**
@@ -154,6 +168,7 @@ function errorHandler(logger = console) {
      * @param {Request} req
      * @param {Response} res
      * @param {NextFunction} next
+     * @returns {void}
      */
     httpErrorHandler(err, req, res, next) {
       // Retrieve error status
