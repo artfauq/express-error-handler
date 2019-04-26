@@ -13,7 +13,7 @@ const isDevelopment = process.env.NODE_ENV === 'development';
 /**
  * Express error handling and logging utilities.
  *
- * @param {{error(): void}} [logger=console]
+ * @param {any} [logger=console]
  * @returns {{ handleServerError(err: any): void, handleSequelizeConnectionError(err: any): void, axiosErrorParser(err: any, req: Request, res: Response, next: NextFunction): void, celebrateErrorParser(err: any, req: Request, res: Response, next: NextFunction): void, jwtErrorParser(err: any, req: Request, res: Response, next: NextFunction): void, httpErrorHandler(err: any, req: Request, res: Response, next: NextFunction): void;}}
  */
 function errorHandler(logger = console) {
@@ -128,9 +128,8 @@ function errorHandler(logger = console) {
         if (error.details) {
           const [details] = err.details;
           const { message } = details;
-          const { key, label } = details.context;
 
-          error.message = label !== key ? label : message;
+          error.message = message;
         }
 
         return next(error);
