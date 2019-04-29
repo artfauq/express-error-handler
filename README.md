@@ -123,7 +123,7 @@ app.use(celebrateErrorParser);
 Middleware that checks if `err` was originated by [celebrate](https://www.npmjs.com/package/celebrate) (validation error) and if so:
 
 - Set error `status` to `400`
-- Set error `message` to default Joi message or custom message if `Joi.label()` was used
+- Set error `message` to default Joi message or custom message if `Joi.error()` was used
 
 **Note:** this middleware will call the next middleware in the stack with `next(err)`.
 
