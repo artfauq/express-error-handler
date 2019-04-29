@@ -1,6 +1,6 @@
 {
   "name": "@kazaar/express-error-handler",
-  "version": "2.2.3",
+  "version": "2.2.4",
   "description": "Express error handling and logging utilities",
   "main": "index.js",
   "repository": "arthurfauq/express-error-handler",
