@@ -186,7 +186,7 @@ function errorHandler(logger = console) {
       logError(error, msg);
 
       // Determine if error details should be hidden from client
-      if (!isDevelopment || error.status >= 500) {
+      if (error.status >= 500 && !isDevelopment) {
         error.name = 'Server Error';
         error.message = 'Internal server error';
       }
