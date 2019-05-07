@@ -126,7 +126,7 @@ function errorHandler(logger = console) {
         const error = Object.assign(err.joi || err, { status: 400 });
 
         if (error.details) {
-          const [details] = err.details;
+          const [details] = error.details;
           const { message } = details;
 
           error.message = message;
