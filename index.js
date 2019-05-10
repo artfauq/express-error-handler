@@ -191,6 +191,9 @@ function errorHandler(logger = console) {
         error.message = 'Internal server error';
       }
 
+      // Set response status
+      res.status(error.status);
+
       // Set response content according to acceptable format
       res.format({
         text: () => {
@@ -205,9 +208,6 @@ function errorHandler(logger = console) {
           });
         },
       });
-
-      // Set response status and send response
-      res.status(error.status).end();
     },
   };
 }
