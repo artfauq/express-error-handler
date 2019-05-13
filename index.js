@@ -151,7 +151,7 @@ function errorHandler(logger = console) {
       if (err.name === 'UnauthorizedError') {
         const error = Object.assign(err, {
           status: 401,
-          message: 'Invalid token',
+          message: err.message || 'Invalid or missing token',
         });
 
         return next(error);
