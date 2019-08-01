@@ -122,7 +122,7 @@ function errorHandler(logger = console) {
      * @returns {void}
      */
     celebrateErrorParser(err, req, res, next) {
-      if (isCelebrate(err) || err.isJoi) {
+      if (isCelebrate(err) || err.isJoi || err.joi) {
         const error = Object.assign(err.joi || err, { status: 400 });
 
         if (error.details) {
