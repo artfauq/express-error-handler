@@ -4,17 +4,15 @@
  * @typedef {import('express').NextFunction} NextFunction
  */
 
-const chalk = require('chalk').default;
 const { isCelebrate } = require('celebrate');
 
-const { red } = chalk.bold;
 const isDevelopment = process.env.NODE_ENV === 'development';
 
 /**
  * Express error handling and logging utilities.
  *
  * @param {any} [logger=console]
- * @returns {{ handleServerError(err: any): void, handleSequelizeConnectionError(err: any): void, axiosErrorParser(err: any, req: Request, res: Response, next: NextFunction): void, celebrateErrorParser(err: any, req: Request, res: Response, next: NextFunction): void, jwtErrorParser(err: any, req: Request, res: Response, next: NextFunction): void, httpErrorHandler(err: any, req: Request, res: Response, next: NextFunction): void;}}
+ * @returns {{ handleServerError(err: any): void, handleSequelizeConnectionError(err: any): void, axiosErrorParser(err: any, req: Request, res: Response, next: NextFunction): void, celebrateErrorParser(err: any, req: Request, res: Response, next: NextFunction): void, jwtErrorParser(err: any, req: Request, res: Response, next: NextFunction): void, httpErrorHandler(err: any, req: Request, res: Response, next: NextFunction): void }}
  */
 function errorHandler(logger = console) {
   if (!('error' in logger)) {
@@ -52,11 +50,11 @@ function errorHandler(logger = console) {
 
       switch (err.code) {
         case 'EADDRINUSE':
-          message = `${red('X')} Error: port ${port} of ${address} already in use\n`;
+          message = `Error: port ${port} of ${address} already in use`;
           break;
 
         case 'EACCES':
-          message = `${red('X')} Error: port ${port} requires elevated privileges`;
+          message = `Error: port ${port} requires elevated privileges`;
           break;
 
         default:
@@ -73,20 +71,42 @@ function errorHandler(logger = console) {
      * @returns {void}
      */
     handleSequelizeConnectionError(err) {
-      let message = '';
+      const { name } = err;
+      const { address, port } = err.original;
 
-      if (err.original) {
-        const { name } = err;
-        const { code, address, port } = err.original;
+      let message = `${name} - Failed to connect to database at ${address} on port ${port}: `;
 
-        switch (code) {
-          case 'ECONNREFUSED':
-            message = `${red('X')} ${name}: Failed to connect to database at ${address}:${port}`;
-            break;
+      switch (name) {
+        case 'SequelizeConnectionRefusedError':
+          message += 'connection refused.';
+          break;
 
-          default:
-            message = err.message || `${err}`;
-        }
+        case 'SequelizeAccessDeniedError':
+          message = 'insufficient privileges.';
+          break;
+
+        case 'SequelizeConnectionAcquireTimeoutError':
+          message = 'connection not acquired due to timeout.';
+          break;
+
+        case 'SequelizeConnectionTimedOutError':
+          message = 'connection timed out.';
+          break;
+
+        case 'SequelizeHostNotFoundError':
+          message = 'hostname not found.';
+          break;
+
+        case 'SequelizeHostNotReachableError':
+          message = 'hostname not reachable.';
+          break;
+
+        case 'SequelizeInvalidConnectionError':
+          message = 'invalid connection parameters.';
+          break;
+
+        default:
+          message += err.message || `${err}`;
       }
 
       logError(err, message);
