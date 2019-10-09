@@ -12,7 +12,7 @@ const isDevelopment = process.env.NODE_ENV === 'development';
  * Express error handling and logging utilities.
  *
  * @param {any} [logger=console]
- * @returns {{ handleServerError(err: any): void, handleSequelizeConnectionError(err: any): void, axiosErrorParser(err: any, req: Request, res: Response, next: NextFunction): void, celebrateErrorParser(err: any, req: Request, res: Response, next: NextFunction): void, jwtErrorParser(err: any, req: Request, res: Response, next: NextFunction): void, httpErrorHandler(err: any, req: Request, res: Response, next: NextFunction): void }}
+ * @returns {{ handleServerError, handleSequelizeConnectionError, sequelizeErrorParser, celebrateErrorParser, httpErrorHandler }}
  */
 function errorHandler(logger = console) {
   if (!('error' in logger)) {
@@ -113,7 +113,7 @@ function errorHandler(logger = console) {
     },
 
     /**
-     * Axios errors parsing Express middleware.
+     * Sequelize error parsing Express middleware.
      *
      * @param {any} err
      * @param {Request} req
@@ -121,10 +121,14 @@ function errorHandler(logger = console) {
      * @param {NextFunction} next
      * @returns {void}
      */
-    axiosErrorParser(err, req, res, next) {
-      if (err.response) {
-        const { status } = err.response;
-        const error = Object.assign(err, { status });
+    sequelizeErrorParser(err, req, res, next) {
+      if (err.name === 'SequelizeDatabaseError') {
+        const { detail, sql } = err.original;
+
+        let message = `${err.original}`.replace('error: ', '');
+        message += `. ${detail} SQL: ${sql}`;
+
+        const error = Object.assign(err, { status: 500, message });
 
         return next(error);
       }
@@ -133,7 +137,7 @@ function errorHandler(logger = console) {
     },
 
     /**
-     * celebrate/joi errors parsing Express middleware.
+     * celebrate/joi error parsing Express middleware.
      *
      * @param {any} err
      * @param {Request} req
@@ -151,28 +155,6 @@ function errorHandler(logger = console) {
 
           error.message = message;
         }
-
-        return next(error);
-      }
-
-      return next(err);
-    },
-
-    /**
-     * JWT errors parsing Express middleware.
-     *
-     * @param {any} err
-     * @param {Request} req
-     * @param {Response} res
-     * @param {NextFunction} next
-     * @returns {void}
-     */
-    jwtErrorParser(err, req, res, next) {
-      if (err.name === 'UnauthorizedError') {
-        const error = Object.assign(err, {
-          status: 401,
-          message: err.message || 'Invalid or missing token',
-        });
 
         return next(error);
       }
