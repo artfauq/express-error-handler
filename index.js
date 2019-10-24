@@ -71,45 +71,49 @@ function errorHandler(logger = console) {
      * @returns {void}
      */
     handleSequelizeConnectionError(err) {
-      const { name } = err;
-      const { address, port } = err.original;
+      if (err.original) {
+        const { name } = err;
+        const { address, port } = err.original;
 
-      let message = `${name} - Failed to connect to database at ${address} on port ${port}: `;
+        let message = `${name} - Failed to connect to database at ${address} on port ${port}: `;
 
-      switch (name) {
-        case 'SequelizeConnectionRefusedError':
-          message += 'connection refused.';
-          break;
+        switch (name) {
+          case 'SequelizeConnectionRefusedError':
+            message += 'connection refused.';
+            break;
 
-        case 'SequelizeAccessDeniedError':
-          message = 'insufficient privileges.';
-          break;
+          case 'SequelizeAccessDeniedError':
+            message = 'insufficient privileges.';
+            break;
 
-        case 'SequelizeConnectionAcquireTimeoutError':
-          message = 'connection not acquired due to timeout.';
-          break;
+          case 'SequelizeConnectionAcquireTimeoutError':
+            message = 'connection not acquired due to timeout.';
+            break;
 
-        case 'SequelizeConnectionTimedOutError':
-          message = 'connection timed out.';
-          break;
+          case 'SequelizeConnectionTimedOutError':
+            message = 'connection timed out.';
+            break;
 
-        case 'SequelizeHostNotFoundError':
-          message = 'hostname not found.';
-          break;
+          case 'SequelizeHostNotFoundError':
+            message = 'hostname not found.';
+            break;
 
-        case 'SequelizeHostNotReachableError':
-          message = 'hostname not reachable.';
-          break;
+          case 'SequelizeHostNotReachableError':
+            message = 'hostname not reachable.';
+            break;
 
-        case 'SequelizeInvalidConnectionError':
-          message = 'invalid connection parameters.';
-          break;
+          case 'SequelizeInvalidConnectionError':
+            message = 'invalid connection parameters.';
+            break;
 
-        default:
-          message += err.message || `${err}`;
+          default:
+            message += err.message || `${err}`;
+        }
+
+        logError(err, message);
+      } else {
+        logError(err);
       }
-
-      logError(err, message);
     },
 
     /**
