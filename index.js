@@ -127,11 +127,7 @@ function errorHandler(logger = console) {
      */
     sequelizeErrorParser(err, req, res, next) {
       if (err.name === 'SequelizeDatabaseError') {
-        const { detail, sql } = err.original;
-
-        let message = `${err.original}`.replace('error: ', '');
-        message += `. ${detail} SQL: ${sql}`;
-
+        const message = `${err.message}. Query: ${err.sql}`;
         const error = Object.assign(err, { status: 500, message });
 
         return next(error);
