@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.5.0 (November 4, 2019)
+
+- Updated `httpErrorHandler`
+  - Updated internal server error name
+  - Updated logged error format
+- Updated error stack logging condition
+
 ## 2.4.2 (October 25, 2019)
 
 - Updated `sequelizeErrorParser`
