@@ -168,9 +168,10 @@ function errorHandler(logger = console) {
      * @param {any} err
      * @param {Request} req
      * @param {Response} res
+     * @param {NextFunction} next
      * @returns {void}
      */
-    httpErrorHandler(err, req, res) {
+    httpErrorHandler(err, req, res, next) {
       const { message, name, stack } = err;
       const { ip, method, originalUrl } = req;
 
