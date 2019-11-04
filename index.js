@@ -6,7 +6,7 @@
 
 const { isCelebrate } = require('celebrate');
 
-const isDevelopment = process.env.NODE_ENV === 'development';
+const isProduction = process.env.NODE_ENV === 'production';
 
 /**
  * Express error handling and logging utilities.
@@ -28,8 +28,8 @@ function errorHandler(logger = console) {
   function logError(err, message = '') {
     let error = message || err.message || err;
 
-    // Append error stack if app is in development mode
-    if (isDevelopment) {
+    // Append error stack if app is not in production mode
+    if (!isProduction) {
       error += `\n\n${err.stack}\n`;
     }
 
@@ -168,28 +168,29 @@ function errorHandler(logger = console) {
      * @param {any} err
      * @param {Request} req
      * @param {Response} res
-     * @param {NextFunction} next
      * @returns {void}
      */
-    httpErrorHandler(err, req, res, next) {
+    httpErrorHandler(err, req, res) {
+      const { message, name, stack } = err;
+      const { ip, method, originalUrl } = req;
+
       // Retrieve error status
       const status = parseInt(err.status, 10) || 500;
 
       // Set error details
       const error = {
+        name,
+        message,
+        stack,
         status,
-        name: err.name,
-        message: err.message,
-        stack: err.stack,
       };
 
       // Log error with a custom error message
-      const msg = `${error.status} - ${error.name}: ${error.message} [${req.method} ${req.originalUrl} - ${req.ip}]`;
-      logError(error, msg);
+      logError(error, ` ${status} - [${method} ${originalUrl} - ${ip}] - ${name}: ${message}`);
 
       // Determine if error details should be hidden from client
-      if (error.status >= 500 && !isDevelopment) {
-        error.name = 'Server Error';
+      if (error.status >= 500 && isProduction) {
+        error.name = 'InternalServerError';
         error.message = 'Internal server error';
       }
 
