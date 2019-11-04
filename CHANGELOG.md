@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.5.1 (November 4, 2019)
+
+- Fixed broken `httpErrorHandler`
+
 ## 2.5.0 (November 4, 2019)
 
 - Updated `httpErrorHandler`
