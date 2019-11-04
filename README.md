@@ -168,10 +168,10 @@ sequelize.authenticate().catch(handleDatabaseConnectionError);
 
 This package makes use ot the `NODE_ENV` environement variable.
 
-If `NODE_ENV` is set to `development`:
+If `NODE_ENV` is set to `production`:
 
-- Error stack will be appended to the logs
-- Error details will be sent back to the client
+- Error stack will not be appended to the logs
+- Internal server error details will not be sent back to the client
 
 ## License
 
