@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.5.2 (November 6, 2019)
+
+- Fixed `handleSequelizeConnectionError` address not found issue
+
 ## 2.5.1 (November 4, 2019)
 
 - Fixed broken `httpErrorHandler`
