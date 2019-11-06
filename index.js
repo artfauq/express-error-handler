@@ -73,9 +73,8 @@ function errorHandler(logger = console) {
     handleSequelizeConnectionError(err) {
       if (err.original) {
         const { name } = err;
-        const { address, port } = err.original;
 
-        let message = `${name} - Failed to connect to database at ${address} on port ${port}: `;
+        let message = `${name} - Failed to connect to database: `;
 
         switch (name) {
           case 'SequelizeConnectionRefusedError':
