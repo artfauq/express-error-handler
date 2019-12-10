@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.5.3 (December 10, 2019)
+
+- Fixed `handleSequelizeConnectionError` logging issue
+
 ## 2.5.2 (November 6, 2019)
 
 - Fixed `handleSequelizeConnectionError` address not found issue
