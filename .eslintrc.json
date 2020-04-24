@@ -13,30 +13,13 @@
   "plugins": ["promise"],
   "rules": {
     "linebreak-style": ["error", "windows"],
-    "no-unused-vars": [
-      "error",
-      {
-        "argsIgnorePattern": "next"
-      }
-    ],
+    "no-unused-vars": "warn",
     "quotes": [
       "error",
       "single",
       {
         "avoidEscape": true,
         "allowTemplateLiterals": false
-      }
-    ],
-    "require-jsdoc": [
-      "error",
-      {
-        "require": {
-          "FunctionDeclaration": true,
-          "MethodDefinition": true,
-          "ClassDeclaration": true,
-          "ArrowFunctionExpression": false,
-          "FunctionExpression": true
-        }
       }
     ],
     "valid-jsdoc": [

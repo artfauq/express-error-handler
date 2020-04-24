@@ -1,126 +1,77 @@
 /**
- * @typedef {import('express').Request} Request
- * @typedef {import('express').Response} Response
- * @typedef {import('express').NextFunction} NextFunction
+ * @typedef {import('express').ErrorRequestHandler} ErrorRequestHandler
+ *
  */
 
 const { isCelebrate } = require('celebrate');
 
 const isProduction = process.env.NODE_ENV === 'production';
 
-/**
- * Express error handling and logging utilities.
- *
- * @param {any} [logger=console]
- * @returns {{ handleServerError, handleSequelizeConnectionError, sequelizeErrorParser, celebrateErrorParser, httpErrorHandler }}
- */
-function errorHandler(logger = console) {
-  if (!('error' in logger)) {
-    throw new Error("'logger' object must have an 'error' property");
-  }
+module.exports = {
+  handleServerError(err) {
+    const { port, address } = err;
 
-  /**
-   * Logs an error.
-   *
-   * @param {any} err
-   * @param {string} [message='']
-   */
-  function logError(err, message = '') {
-    let error = message || err.message || err;
+    let message = '';
 
-    // Append error stack if app is not in production mode
-    if (!isProduction) {
-      error += `\n\n${err.stack}\n`;
+    switch (err.code) {
+      case 'EADDRINUSE':
+        message = `Error: port ${port} of ${address} already in use`;
+        break;
+
+      case 'EACCES':
+        message = `Error: port ${port} requires elevated privileges`;
+        break;
+
+      default:
+        message = err.message || `${err}`;
     }
 
-    logger.error(error);
-  }
+    throw Object.assign(err, { message });
+  },
 
-  return {
-    /**
-     * Error handler for server 'error' event.
-     *
-     * @param {any} err
-     * @returns {void}
-     */
-    handleServerError(err) {
-      let message = '';
+  handleSequelizeConnectionError(err) {
+    const { name } = err;
 
-      const { port, address } = err;
+    let message = `${name} - Failed to connect to database: `;
 
-      switch (err.code) {
-        case 'EADDRINUSE':
-          message = `Error: port ${port} of ${address} already in use`;
-          break;
+    switch (name) {
+      case 'SequelizeConnectionRefusedError':
+        message += 'connection refused.';
+        break;
 
-        case 'EACCES':
-          message = `Error: port ${port} requires elevated privileges`;
-          break;
+      case 'SequelizeAccessDeniedError':
+        message += 'insufficient privileges.';
+        break;
 
-        default:
-          message = err.message || `${err}`;
-      }
+      case 'SequelizeConnectionAcquireTimeoutError':
+        message += 'connection not acquired due to timeout.';
+        break;
 
-      return logError(err, message);
-    },
+      case 'SequelizeConnectionTimedOutError':
+        message += 'connection timed out.';
+        break;
 
-    /**
-     * Error handler for sequelize connection error.
-     *
-     * @param {any} err
-     * @returns {void}
-     */
-    handleSequelizeConnectionError(err) {
-      const { name } = err;
+      case 'SequelizeHostNotFoundError':
+        message += 'hostname not found.';
+        break;
 
-      let message = `${name} - Failed to connect to database: `;
+      case 'SequelizeHostNotReachableError':
+        message += 'hostname not reachable.';
+        break;
 
-      switch (name) {
-        case 'SequelizeConnectionRefusedError':
-          message += 'connection refused.';
-          break;
+      case 'SequelizeInvalidConnectionError':
+        message += 'invalid connection parameters.';
+        break;
 
-        case 'SequelizeAccessDeniedError':
-          message += 'insufficient privileges.';
-          break;
+      default:
+        message += err.message || `${err}`;
+    }
 
-        case 'SequelizeConnectionAcquireTimeoutError':
-          message += 'connection not acquired due to timeout.';
-          break;
+    throw Object.assign(err, { message });
+  },
 
-        case 'SequelizeConnectionTimedOutError':
-          message += 'connection timed out.';
-          break;
-
-        case 'SequelizeHostNotFoundError':
-          message += 'hostname not found.';
-          break;
-
-        case 'SequelizeHostNotReachableError':
-          message += 'hostname not reachable.';
-          break;
-
-        case 'SequelizeInvalidConnectionError':
-          message += 'invalid connection parameters.';
-          break;
-
-        default:
-          message += err.message || `${err}`;
-      }
-
-      return logError(err, message);
-    },
-
-    /**
-     * Sequelize error parsing Express middleware.
-     *
-     * @param {any} err
-     * @param {Request} req
-     * @param {Response} res
-     * @param {NextFunction} next
-     * @returns {void}
-     */
-    sequelizeErrorParser(err, req, res, next) {
+  sequelizeErrorParser() {
+    return (err, req, res, next) => {
       if (err.name === 'SequelizeDatabaseError') {
         const message = `${err.message}. Query: ${err.sql}`;
         const error = Object.assign(err, { status: 500, message });
@@ -129,18 +80,11 @@ function errorHandler(logger = console) {
       }
 
       return next(err);
-    },
+    };
+  },
 
-    /**
-     * celebrate/joi error parsing Express middleware.
-     *
-     * @param {any} err
-     * @param {Request} req
-     * @param {Response} res
-     * @param {NextFunction} next
-     * @returns {void}
-     */
-    celebrateErrorParser(err, req, res, next) {
+  celebrateErrorParser() {
+    return (err, req, res, next) => {
       if (isCelebrate(err) || err.isJoi || err.joi) {
         const error = Object.assign(err.joi || err, { status: 400 });
 
@@ -155,18 +99,15 @@ function errorHandler(logger = console) {
       }
 
       return next(err);
-    },
+    };
+  },
 
-    /**
-     * HTTP error handling Express middleware.
-     *
-     * @param {any} err
-     * @param {Request} req
-     * @param {Response} res
-     * @param {NextFunction} next
-     * @returns {void}
-     */
-    httpErrorHandler(err, req, res, next) {
+  httpErrorHandler(logger = console) {
+    if (!('error' in logger) || typeof logger.error !== 'function') {
+      throw new Error("'logger' object must have an 'error' function");
+    }
+
+    return (err, req, res, next) => {
       const { message, name, stack } = err;
       const { ip, method, originalUrl } = req;
 
@@ -174,15 +115,14 @@ function errorHandler(logger = console) {
       const status = parseInt(err.status, 10) || 500;
 
       // Set error details
-      const error = {
-        name,
-        message,
-        stack,
-        status,
-      };
+      const error = { name, message, stack, status };
 
-      // Log error with a custom error message
-      logError(error, ` ${status} - [${method} ${originalUrl} - ${ip}] - ${name}: ${message}`);
+      // Log error
+      logger.error(
+        `${status} - [${method} ${originalUrl} - ${ip}] - ${name}: ${message}${
+          !isProduction ? `\n\n${stack}\n` : ''
+        }`
+      );
 
       // Determine if error details should be hidden from client
       if (error.status >= 500 && isProduction) {
@@ -207,8 +147,6 @@ function errorHandler(logger = console) {
           });
         },
       });
-    },
-  };
-}
-
-module.exports = errorHandler;
+    };
+  },
+};

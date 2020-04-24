@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.0.0 (April 24, 2020)
+
+- Added types definition
+- Updated middlewares usage
+
 ## 2.5.3 (December 10, 2019)
 
 - Fixed `handleSequelizeConnectionError` logging issue
