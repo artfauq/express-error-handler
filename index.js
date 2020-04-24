@@ -8,7 +8,7 @@ const { isCelebrate } = require('celebrate');
 const isProduction = process.env.NODE_ENV === 'production';
 
 module.exports = {
-  handleServerError(err) {
+  parseServerError(err) {
     const { port, address } = err;
 
     let message = '';
@@ -26,10 +26,10 @@ module.exports = {
         message = err.message || `${err}`;
     }
 
-    throw Object.assign(err, { message });
+    return Object.assign(err, { message });
   },
 
-  handleSequelizeConnectionError(err) {
+  parseSequelizeConnectionError(err) {
     const { name } = err;
 
     let message = `${name} - Failed to connect to database: `;
@@ -67,7 +67,7 @@ module.exports = {
         message += err.message || `${err}`;
     }
 
-    throw Object.assign(err, { message });
+    return Object.assign(err, { message });
   },
 
   sequelizeErrorParser() {

@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.0.1 (April 24, 2020)
+
+- Fixed error handlers usage issue
+
 ## 3.0.0 (April 24, 2020)
 
 - Added types definition

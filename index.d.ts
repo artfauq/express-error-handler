@@ -2,24 +2,28 @@ import { ErrorRequestHandler } from 'express';
 
 declare namespace ExpressErrorHandler {
   /**
-   * Error handler for handling Node.js http server 'error' event.
+   * Error parser for Node.js http server 'error' event.
    *
    * @example
    * app
       .listen(process.env.PORT)
-      .on('error', errorHandler.handleServerError)
+      .on('error', err => {
+        throw parseServerError(err);
+      })
    */
-  function handleServerError(err: Error): void;
+  function parseServerError(err: Error): Error;
 
   /**
-   * Error handler for handling `Sequelize`'s connection error.
+   * Error parser for `Sequelize` connection error.
    *
    * @example
    * sequelize
       .authenticate()
-      .catch(errorHandler.handleSequelizeConnectionError)
+      .catch(err => {
+        throw parseSequelizeConnectionError(err);
+      })
    */
-  function handleSequelizeConnectionError(err: any): void;
+  function parseSequelizeConnectionError(err: any): Error;
 
   /**
    * Returns a middleware used for `Sequelize` errors parsing.
