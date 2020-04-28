@@ -102,27 +102,27 @@ module.exports = {
     };
   },
 
-  httpErrorHandler(logger = console) {
+  errorLogger(logger = console) {
     if (!('error' in logger) || typeof logger.error !== 'function') {
       throw new Error("'logger' object must have an 'error' function");
     }
 
     return (err, req, res, next) => {
       const { message, name, stack } = err;
-      const { ip, method, originalUrl } = req;
+
+      logger.error(`${name}: ${message}${!isProduction ? `\n\n${stack}\n` : ''}`);
+    };
+  },
+
+  httpErrorHandler() {
+    return (err, req, res, next) => {
+      const { message, name, stack } = err;
 
       // Retrieve error status
       const status = parseInt(err.status, 10) || 500;
 
       // Set error details
       const error = { name, message, stack, status };
-
-      // Log error
-      logger.error(
-        `${status} - [${method} ${originalUrl} - ${ip}] - ${name}: ${message}${
-          !isProduction ? `\n\n${stack}\n` : ''
-        }`
-      );
 
       // Determine if error details should be hidden from client
       if (error.status >= 500 && isProduction) {

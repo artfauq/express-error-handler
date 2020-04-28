@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.1.0 (April 28, 2020)
+
+- Added `errorLogger` middleware
+
 ## 3.0.1 (April 24, 2020)
 
 - Fixed error handlers usage issue

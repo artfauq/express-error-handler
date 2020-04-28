@@ -26,23 +26,27 @@ declare namespace ExpressErrorHandler {
   function parseSequelizeConnectionError(err: any): Error;
 
   /**
-   * Returns a middleware used for `Sequelize` errors parsing.
+   * Middleware used to parse `Sequelize` errors.
    */
   function sequelizeErrorParser(): ErrorRequestHandler;
 
   /**
-   * Returns a middleware used for `celebrate` errors parsing.
+   * Middleware used for parse `celebrate` errors.
    */
   function celebrateErrorParser(): ErrorRequestHandler;
 
   /**
-   * Returns a middleware used to handle HTTP error responses.
-   *
-   * This middleware logs error with the defined `logger` with the error stack is appended if
-   * `NODE_ENV` is not `production`. It should be declared after all other middlewares as it will
-   * end the response process.
+   * Middleware used to log errors with the defined `logger`.
    */
-  function httpErrorHandler(logger?: Logger): ErrorRequestHandler;
+  function errorLogger(logger?: Logger): ErrorRequestHandler;
+
+  /**
+   * Middleware used to handle HTTP error responses.
+   *
+   * This middleware should be declared after all other middlewares as it will end the response
+   * process.
+   */
+  function httpErrorHandler(): ErrorRequestHandler;
 }
 
 interface Logger {
