@@ -111,6 +111,8 @@ module.exports = {
       const { message, name, stack } = err;
 
       logger.error(`${name}: ${message}${!isProduction ? `\n\n${stack}\n` : ''}`);
+
+      next(err);
     };
   },
 
