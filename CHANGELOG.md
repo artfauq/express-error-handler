@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.1.1 (April 29, 2020)
+
+- Fixed `errorLogger` middleware `next` not called
+
 ## 3.1.0 (April 28, 2020)
 
 - Added `errorLogger` middleware
