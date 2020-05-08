@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.1.2 (May 8, 2020)
+
+- Fixed error parsers issue
+
 ## 3.1.1 (April 29, 2020)
 
 - Fixed `errorLogger` middleware `next` not called
