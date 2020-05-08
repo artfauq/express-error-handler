@@ -26,7 +26,7 @@ module.exports = {
         message = err.message || `${err}`;
     }
 
-    return Object.assign(err, { message });
+    return Object.assign({}, err, { message });
   },
 
   parseSequelizeConnectionError(err) {
@@ -67,7 +67,7 @@ module.exports = {
         message += err.message || `${err}`;
     }
 
-    return Object.assign(err, { message });
+    return Object.assign({}, err, { message });
   },
 
   sequelizeErrorParser() {
