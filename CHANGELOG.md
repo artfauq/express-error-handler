@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.1.4 (January 15, 2021)
+
+- Fixed BadRequest error instance issue
+
 ## 3.1.3 (January 15, 2021)
 
 - Fixed Celebrate error parsing issue

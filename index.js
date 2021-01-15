@@ -27,7 +27,7 @@ module.exports = {
         message = err.message || `${err}`;
     }
 
-    return Object.assign(err, new InternalServerError(message));
+    return Object.assign(new InternalServerError(), err, { message });
   },
 
   parseSequelizeConnectionError(err) {
@@ -68,14 +68,14 @@ module.exports = {
         message += err.message || `${err}`;
     }
 
-    return Object.assign(err, new InternalServerError(message));
+    return Object.assign(new InternalServerError(), err, { message });
   },
 
   sequelizeErrorParser() {
     return (err, req, res, next) => {
       if (err.name === 'SequelizeDatabaseError') {
         const message = `${err.message}. Query: ${err.sql}`;
-        const error = Object.assign(err, new InternalServerError(message));
+        const error = Object.assign(new InternalServerError(), err, { message });
 
         return next(error);
       }
@@ -87,7 +87,7 @@ module.exports = {
   celebrateErrorParser() {
     return (err, req, res, next) => {
       if (isCelebrate(err) || err.isJoi || err.joi) {
-        const error = Object.assign(err.joi || err, new BadRequest());
+        const error = Object.assign(new BadRequest(), err.joi || err);
 
         if (error.details) {
           const [details] = error.details;
