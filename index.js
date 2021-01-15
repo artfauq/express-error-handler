@@ -4,6 +4,7 @@
  */
 
 const { isCelebrate } = require('celebrate');
+const { BadRequest, InternalServerError } = require('http-errors');
 
 const isProduction = process.env.NODE_ENV === 'production';
 
@@ -26,7 +27,7 @@ module.exports = {
         message = err.message || `${err}`;
     }
 
-    return Object.assign({}, err, { message });
+    return Object.assign(err, new InternalServerError(message));
   },
 
   parseSequelizeConnectionError(err) {
@@ -67,14 +68,14 @@ module.exports = {
         message += err.message || `${err}`;
     }
 
-    return Object.assign({}, err, { message });
+    return Object.assign(err, new InternalServerError(message));
   },
 
   sequelizeErrorParser() {
     return (err, req, res, next) => {
       if (err.name === 'SequelizeDatabaseError') {
         const message = `${err.message}. Query: ${err.sql}`;
-        const error = Object.assign(err, { status: 500, message });
+        const error = Object.assign(err, new InternalServerError(message));
 
         return next(error);
       }
@@ -86,7 +87,7 @@ module.exports = {
   celebrateErrorParser() {
     return (err, req, res, next) => {
       if (isCelebrate(err) || err.isJoi || err.joi) {
-        const error = Object.assign(err.joi || err, { status: 400 });
+        const error = Object.assign(err.joi || err, new BadRequest());
 
         if (error.details) {
           const [details] = error.details;
