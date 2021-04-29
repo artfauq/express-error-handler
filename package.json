@@ -12,6 +12,7 @@
   },
   "license": "MIT",
   "files": [
+    "src",
     "index.js",
     "index.d.ts"
   ],
