@@ -28,12 +28,17 @@ declare namespace ExpressErrorHandler {
   /**
    * Middleware used to parse `Sequelize` errors.
    */
-  function sequelizeErrorParser(): ErrorRequestHandler;
+  function sequelizeErrorHandler(): ErrorRequestHandler;
 
   /**
    * Middleware used for parse `celebrate` errors.
    */
-  function celebrateErrorParser(): ErrorRequestHandler;
+  function celebrateErrorHandler(): ErrorRequestHandler;
+
+  /**
+   * Middleware used for parse `express-jwt` errors.
+   */
+  function jwtErrorHandler(): ErrorRequestHandler;
 
   /**
    * Middleware used to log errors with the defined `logger`.

@@ -35,8 +35,8 @@ const errorHandler = expressErrorHandler(logger);
 const app = express();
 
 // Configure application middlewares
-app.use(errorHandler.celebrateErrorParser);
-app.use(errorHandler.sequelizeErrorParser);
+app.use(errorHandler.celebrateErrorHandler);
+app.use(errorHandler.sequelizeErrorHandler);
 app.use(errorHandler.httpErrorHandler);
 
 // Try database authentication and start server
@@ -92,26 +92,26 @@ When initializing the error handler, the returned object exposes some Express mi
 
 #### Express middlewares
 
-- **celebrateErrorParser(err, req, res, next)**
+- **celebrateErrorHandler(err, req, res, next)**
 
 > **celebrate/joi** error parsing Express middleware
 
 ```javascript
-const { celebrateErrorParser } = expressErrorHandler(logger);
+const { celebrateErrorHandler } = expressErrorHandler(logger);
 
-app.use(celebrateErrorParser);
+app.use(celebrateErrorHandler);
 ```
 
 Middleware that checks if `err` was originated by [celebrate](https://www.npmjs.com/package/celebrate) (validation error) and if so, sets error `status` to `400` and sets error `message` to default Joi message or custom message if `Joi.error()` was used.
 
-- **sequelizeErrorParser(err, req, res, next)**
+- **sequelizeErrorHandler(err, req, res, next)**
 
 > **sequelize** error parsing Express middleware
 
 ```javascript
-const { sequelizeErrorParser } = expressErrorHandler(logger);
+const { sequelizeErrorHandler } = expressErrorHandler(logger);
 
-app.use(sequelizeErrorParser);
+app.use(sequelizeErrorHandler);
 ```
 
 Middleware that checks if `err` was originated by [sequelize](https://github.com/sequelize/sequelize) and if so, sets error `status` to `500` and sets error `message` to default custom message parsed from error details.
