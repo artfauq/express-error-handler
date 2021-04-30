@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.2.2 (April 30, 2021)
+
+- Added optional `peerDependencies` support
+
 ## 3.1.4 (January 15, 2021)
 
 - Fixed BadRequest error instance issue

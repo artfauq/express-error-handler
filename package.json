@@ -50,6 +50,17 @@
     "express-jwt": "6.x",
     "sequelize": ">= 4.x"
   },
+  "peerDependenciesMeta": {
+    "celebrate": {
+      "optional": true
+    },
+    "express-jwt": {
+      "optional": true
+    },
+    "sequelize": {
+      "optional": true
+    }
+  },
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"
