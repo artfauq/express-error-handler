@@ -1,7 +1,9 @@
-const { BadRequest } = require('http-errors');
+const createHttpError = require('http-errors');
 const { isCelebrate } = require('celebrate');
-
-function celebrateErrorHandler() {
+/**
+ * Generic validation schemas
+ */
+function celebrateErrorParser() {
   return (err, req, res, next) => {
     if (isCelebrate(err) || err.isJoi || err.joi) {
       let { message } = err;
@@ -12,11 +14,15 @@ function celebrateErrorHandler() {
         message = details ? details[0].message : err.joi.message;
       }
 
-      next(Object.assign(new BadRequest(), err, { message }));
-    } else {
-      next(err);
+      const error = createHttpError(400, err, { message });
+
+      next(error);
+
+      return;
     }
+
+    next(err);
   };
 }
 
-module.exports = celebrateErrorHandler;
+module.exports = celebrateErrorParser;

@@ -1,20 +1,17 @@
+const createHttpError = require('http-errors');
+
 const isProduction = process.env.NODE_ENV === 'production';
 
-function httpErrorHandler() {
+function errorHandler() {
   return (err, req, res, next) => {
-    const { message, name, stack } = err;
-
     // Retrieve error status
     const status = parseInt(err.status, 10) || 500;
 
-    // Set error details
-    const error = { name, message, stack, status };
+    // Determine if error message should be hidden from client
+    const message = status >= 500 && isProduction ? 'Internal server error' : err.message;
 
-    // Determine if error details should be hidden from client
-    if (error.status >= 500 && isProduction) {
-      error.name = 'InternalServerError';
-      error.message = 'Internal server error';
-    }
+    // Format HTTP error
+    const error = createHttpError(status, err, { message });
 
     // Set response status
     res.status(error.status);
@@ -36,4 +33,4 @@ function httpErrorHandler() {
   };
 }
 
-module.exports = httpErrorHandler;
+module.exports = errorHandler;

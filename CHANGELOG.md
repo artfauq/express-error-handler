@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.2.3 (May 18, 2021)
+
+- Fixed `httpErrorHandler` 500 error name
+
 ## 3.2.2 (April 30, 2021)
 
 - Added optional `peerDependencies` support

@@ -35,8 +35,8 @@ const errorHandler = expressErrorHandler(logger);
 const app = express();
 
 // Configure application middlewares
-app.use(errorHandler.celebrateErrorHandler);
-app.use(errorHandler.sequelizeErrorHandler);
+app.use(errorHandler.celebrateErrorParser);
+app.use(errorHandler.sequelizeErrorParser);
 app.use(errorHandler.httpErrorHandler);
 
 // Try database authentication and start server
@@ -92,38 +92,38 @@ When initializing the error handler, the returned object exposes some Express mi
 
 #### Express middlewares
 
-- **celebrateErrorHandler(err, req, res, next)**
+- **celebrateErrorParser(err, req, res, next)**
 
 > **celebrate/joi** error parsing Express middleware
 
 ```javascript
-const { celebrateErrorHandler } = expressErrorHandler(logger);
+const { celebrateErrorParser } = expressErrorHandler(logger);
 
-app.use(celebrateErrorHandler);
+app.use(celebrateErrorParser);
 ```
 
 Middleware that checks if `err` was originated by [celebrate](https://www.npmjs.com/package/celebrate) (validation error) and if so, sets error `status` to `400` and sets error `message` to default Joi message or custom message if `Joi.error()` was used.
 
-- **sequelizeErrorHandler(err, req, res, next)**
+- **sequelizeErrorParser(err, req, res, next)**
 
 > **sequelize** error parsing Express middleware
 
 ```javascript
-const { sequelizeErrorHandler } = expressErrorHandler(logger);
+const { sequelizeErrorParser } = expressErrorHandler(logger);
 
-app.use(sequelizeErrorHandler);
+app.use(sequelizeErrorParser);
 ```
 
 Middleware that checks if `err` was originated by [sequelize](https://github.com/sequelize/sequelize) and if so, sets error `status` to `500` and sets error `message` to default custom message parsed from error details.
 
-- **httpErrorHandler(err, req, res, next)**
+- **errorHandler(err, req, res, next)**
 
 > HTTP error handling Express middleware
 
 ```javascript
-const { httpErrorHandler } = expressErrorHandler(logger);
+const { errorHandler } = expressErrorHandler(logger);
 
-app.use(httpErrorHandler);
+app.use(errorHandler);
 ```
 
 Middleware used to:

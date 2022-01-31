@@ -8,7 +8,7 @@ declare namespace ExpressErrorHandler {
    * app
       .listen(process.env.PORT)
       .on('error', err => {
-        throw parseServerError(err);
+        console.log(parseServerError(err));
       })
    */
   function parseServerError(err: Error): Error;
@@ -20,7 +20,7 @@ declare namespace ExpressErrorHandler {
    * sequelize
       .authenticate()
       .catch(err => {
-        throw parseSequelizeConnectionError(err);
+        console.log(parseSequelizeConnectionError(err));
       })
    */
   function parseSequelizeConnectionError(err: any): Error;
@@ -28,17 +28,17 @@ declare namespace ExpressErrorHandler {
   /**
    * Middleware used to parse `Sequelize` errors.
    */
-  function sequelizeErrorHandler(): ErrorRequestHandler;
+  function sequelizeErrorParser(): ErrorRequestHandler;
 
   /**
-   * Middleware used for parse `celebrate` errors.
+   * Middleware used to parse `celebrate` errors.
    */
-  function celebrateErrorHandler(): ErrorRequestHandler;
+  function celebrateErrorParser(): ErrorRequestHandler;
 
   /**
-   * Middleware used for parse `express-jwt` errors.
+   * Middleware used to parse `express-jwt` errors.
    */
-  function jwtErrorHandler(): ErrorRequestHandler;
+  function jwtErrorParser(): ErrorRequestHandler;
 
   /**
    * Middleware used to log errors with the defined `logger`.

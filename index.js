@@ -5,20 +5,20 @@ module.exports = {
   parseServerError,
   parseSequelizeConnectionError,
 
-  get celebrateErrorHandler() {
-    return require('./src/middlewares/celebrate');
+  get celebrateErrorParser() {
+    return require('./src/middlewares/celebrate-parser');
   },
 
-  get jwtErrorHandler() {
-    return require('./src/middlewares/express-jwt');
+  get jwtErrorParser() {
+    return require('./src/middlewares/jwt-parser');
   },
 
-  get httpErrorHandler() {
-    return require('./src/middlewares/http-response');
+  get errorHandler() {
+    return require('./src/middlewares/error-handler');
   },
 
-  get sequelizeErrorHandler() {
-    return require('./src/middlewares/sequelize');
+  get sequelizeErrorParser() {
+    return require('./src/middlewares/sequelize-parser');
   },
 
   get errorLogger() {
